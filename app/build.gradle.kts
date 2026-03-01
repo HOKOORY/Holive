@@ -12,6 +12,15 @@ android {
     namespace = "com.ho.holive"
     compileSdk = 34
 
+    val signingStoreFile = System.getenv("SIGNING_STORE_FILE")
+    val signingStorePassword = System.getenv("SIGNING_STORE_PASSWORD")
+    val signingKeyAlias = System.getenv("SIGNING_KEY_ALIAS")
+    val signingKeyPassword = System.getenv("SIGNING_KEY_PASSWORD")
+    val hasReleaseSigning = !signingStoreFile.isNullOrBlank() &&
+        !signingStorePassword.isNullOrBlank() &&
+        !signingKeyAlias.isNullOrBlank() &&
+        !signingKeyPassword.isNullOrBlank()
+
     defaultConfig {
         applicationId = "com.ho.holive"
         minSdk = 24
@@ -26,6 +35,17 @@ android {
         buildConfigField("boolean", "ENABLE_HTTP_LOG", "true")
     }
 
+    signingConfigs {
+        create("release") {
+            if (hasReleaseSigning) {
+                storeFile = file(signingStoreFile!!)
+                storePassword = signingStorePassword
+                keyAlias = signingKeyAlias
+                keyPassword = signingKeyPassword
+            }
+        }
+    }
+
     buildTypes {
         getByName("debug") {
             buildConfigField("boolean", "ENABLE_HTTP_LOG", "true")
@@ -37,6 +57,9 @@ android {
                 "proguard-rules.pro",
             )
             buildConfigField("boolean", "ENABLE_HTTP_LOG", "false")
+            if (hasReleaseSigning) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
 

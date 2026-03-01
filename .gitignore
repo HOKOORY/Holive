@@ -25,6 +25,8 @@ output-metadata.json
 # Signing / secrets
 *.jks
 *.keystore
+*.jks.base64.txt
+*.keystore.base64.txt
 google-services.json
 
 # Logs / profiling / OS junk
