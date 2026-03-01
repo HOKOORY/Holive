@@ -1,4 +1,7 @@
-﻿plugins {
+﻿import com.android.build.OutputFile
+import com.android.build.gradle.internal.api.BaseVariantOutputImpl
+
+plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.kapt")
@@ -100,6 +103,13 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+    applicationVariants.all {
+        outputs.all {
+            val output = this as BaseVariantOutputImpl
+            val abi = output.getFilter(OutputFile.ABI) ?: "universal"
+            output.outputFileName = "好直播-${buildType.name}-$abi.apk"
+        }
+    }
 }
 
 dependencies {
@@ -172,3 +182,4 @@ detekt {
     allRules = false
     config.setFrom(files("$rootDir/detekt.yml"))
 }
+
