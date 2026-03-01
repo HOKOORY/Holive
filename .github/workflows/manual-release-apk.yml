@@ -122,7 +122,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.bump.outputs.tag }}
-          name: Holive ${{ steps.bump.outputs.version_name }} (${{ steps.bump.outputs.version_code }})
+          name: Holive ${{ steps.bump.outputs.version_name }}
           generate_release_notes: true
           files: |
             ${{ steps.apks.outputs.arm64 }}
