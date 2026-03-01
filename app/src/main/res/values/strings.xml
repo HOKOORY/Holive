@@ -1,0 +1,35 @@
+﻿<resources>
+    <string name="app_name">Holive</string>
+    <string name="home_title">Fresh Live</string>
+    <string name="platform_section_title">Platforms</string>
+    <string name="switch_platform">Switch</string>
+    <string name="platform_search_hint">Search platform</string>
+    <string name="rooms_section_title">Live Rooms</string>
+    <string name="search_hint">Search live room</string>
+    <string name="retry">Retry</string>
+    <string name="close">Close</string>
+    <string name="empty_text">No live rooms found</string>
+    <string name="empty_platforms">No platforms available</string>
+    <string name="select_platform">Select Platform</string>
+    <string name="select_platform_hint">Tap a platform card to load rooms</string>
+    <string name="selected">Selected</string>
+    <string name="swipe_hint">Swipe left for previous room, swipe right for next room</string>
+    <string name="brightness_percent">Brightness %1$d%%</string>
+    <string name="volume_percent">Volume %1$d%%</string>
+    <string name="resolution_auto">Auto</string>
+    <string name="fullscreen_landscape">Landscape Fullscreen</string>
+    <string name="fullscreen_portrait">Portrait Fullscreen</string>
+    <string name="video_info">Video Information</string>
+    <string name="video_title">Title: %1$s</string>
+    <string name="video_url">URL: %1$s</string>
+    <string name="video_resolution">Resolution: %1$s</string>
+    <string name="video_resolution_count">Available options: %1$d</string>
+    <string name="network_lost">Network disconnected, trying to reconnect</string>
+    <string name="online_count">Online: %1$d</string>
+    <string name="quality">Quality</string>
+    <string name="fullscreen">Fullscreen</string>
+    <string name="exit_fullscreen">Exit Fullscreen</string>
+    <string name="request_permissions">Enable notifications/camera/mic</string>
+    <string name="open_settings">Open settings</string>
+    <string name="play_failed">Play failed, tap retry</string>
+</resources>
