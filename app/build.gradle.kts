@@ -107,7 +107,7 @@ android {
         outputs.all {
             val output = this as BaseVariantOutputImpl
             val abi = output.getFilter(OutputFile.ABI) ?: "universal"
-            output.outputFileName = "好直播-${buildType.name}-$abi.apk"
+            output.outputFileName = "Holive-${buildType.name}-$abi.apk"
         }
     }
 }
