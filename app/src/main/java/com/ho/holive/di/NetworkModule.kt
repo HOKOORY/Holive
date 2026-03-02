@@ -8,7 +8,6 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import java.io.IOException
-import java.net.UnknownHostException
 import java.util.zip.Inflater
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
@@ -26,8 +25,6 @@ import retrofit2.Retrofit
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
-    private const val PRIMARY_HOST = "api.hclyz.com"
-    private const val FALLBACK_HOST = "api.hclyz.com"
     private const val HEADER_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
     private const val HEADER_ACCEPT = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
     private const val HEADER_ACCEPT_ENCODING = "gzip, deflate"
@@ -48,15 +45,7 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideOkHttpClient(): OkHttpClient {
-        val logging = HttpLoggingInterceptor().apply {
-            level = if (BuildConfig.ENABLE_HTTP_LOG) {
-                HttpLoggingInterceptor.Level.BODY
-            } else {
-                HttpLoggingInterceptor.Level.NONE
-            }
-        }
-
-        return OkHttpClient.Builder()
+        val builder = OkHttpClient.Builder()
             .connectTimeout(15, TimeUnit.SECONDS)
             .readTimeout(20, TimeUnit.SECONDS)
             .writeTimeout(20, TimeUnit.SECONDS)
@@ -81,27 +70,27 @@ object NetworkModule {
                     .build()
                 chain.proceed(request)
             }
-            .addInterceptor(logging)
-            .addInterceptor { chain ->
-                val request = chain.request()
-                try {
-                    proceedWithDecompression(chain, request)
-                } catch (ioe: IOException) {
-                    if (request.method != "GET") throw ioe
-
-                    if (ioe is UnknownHostException && request.url.host == PRIMARY_HOST) {
-                        val backupRequest = request.newBuilder()
-                            .url(request.url.newBuilder().host(FALLBACK_HOST).build())
-                            .build()
-                        return@addInterceptor proceedWithDecompression(chain, backupRequest)
-                    }
-
-                    Thread.sleep(300)
-                    proceedWithDecompression(chain, request)
-                }
-            }
             .retryOnConnectionFailure(true)
-            .build()
+
+        if (BuildConfig.ENABLE_HTTP_LOG) {
+            val logging = HttpLoggingInterceptor().apply {
+                level = HttpLoggingInterceptor.Level.BODY
+            }
+            builder.addInterceptor(logging)
+        }
+
+        builder.addInterceptor { chain ->
+            val request = chain.request()
+            try {
+                proceedWithDecompression(chain, request)
+            } catch (ioe: IOException) {
+                if (request.method != "GET") throw ioe
+                Thread.sleep(300)
+                proceedWithDecompression(chain, request)
+            }
+        }
+
+        return builder.build()
     }
 
     private fun proceedWithDecompression(

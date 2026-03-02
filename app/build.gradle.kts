@@ -1,5 +1,7 @@
-﻿import com.android.build.OutputFile
+import com.android.build.OutputFile
 import com.android.build.gradle.internal.api.BaseVariantOutputImpl
+import org.gradle.api.file.RelativePath
+import org.gradle.api.tasks.Copy
 
 plugins {
     id("com.android.application")
@@ -11,9 +13,14 @@ plugins {
     id("io.gitlab.arturbosch.detekt")
 }
 
+val nativeAbis = listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
+val cmakeFile = file("src/main/cpp/CMakeLists.txt")
+val hasNativeSource = cmakeFile.exists()
+
 android {
     namespace = "com.ho.holive"
     compileSdk = 34
+    ndkVersion = "29.0.14206865"
 
     val signingStoreFile = System.getenv("SIGNING_STORE_FILE")
     val signingStorePassword = System.getenv("SIGNING_STORE_PASSWORD")
@@ -34,8 +41,16 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
 
-        buildConfigField("String", "BASE_URL", "\"http://api.hclyz.com:81/\"")
+        buildConfigField("String", "BASE_URL", "\"https://localhost/\"")
         buildConfigField("boolean", "ENABLE_HTTP_LOG", "true")
+
+        if (hasNativeSource) {
+            externalNativeBuild {
+                cmake {
+                    cppFlags += "-std=c++17"
+                }
+            }
+        }
     }
 
     signingConfigs {
@@ -89,8 +104,16 @@ android {
         abi {
             isEnable = true
             reset()
-            include("armeabi-v7a", "arm64-v8a", "x86")
+            include(*nativeAbis.toTypedArray())
             isUniversalApk = true
+        }
+    }
+
+    if (hasNativeSource) {
+        externalNativeBuild {
+            cmake {
+                path = cmakeFile
+            }
         }
     }
 
@@ -107,7 +130,8 @@ android {
         outputs.all {
             val output = this as BaseVariantOutputImpl
             val abi = output.getFilter(OutputFile.ABI) ?: "universal"
-            output.outputFileName = "Holive-${buildType.name}-$abi.apk"
+            val safeVersionName = (versionName ?: "0.0.0").replace(Regex("[^0-9A-Za-z._-]"), "_")
+            output.outputFileName = "Holive-v${safeVersionName}-${versionCode}-${buildType.name}-$abi.apk"
         }
     }
 }
@@ -181,5 +205,25 @@ detekt {
     buildUponDefaultConfig = true
     allRules = false
     config.setFrom(files("$rootDir/detekt.yml"))
+}
+
+tasks.register<Copy>("exportNativeSo") {
+    group = "build"
+    description = "Build release native library and copy libholive_native.so into src/main/jniLibs for all ABIs."
+    dependsOn("externalNativeBuildRelease")
+    val abis = nativeAbis.toSet()
+    from(layout.buildDirectory.dir("intermediates/cxx/RelWithDebInfo")) {
+        include("**/obj/**/libholive_native.so")
+        includeEmptyDirs = false
+        eachFile {
+            val abi = relativePath.segments.firstOrNull { it in abis }
+            if (abi == null) {
+                exclude()
+            } else {
+                relativePath = RelativePath(true, abi, "libholive_native.so")
+            }
+        }
+    }
+    into(layout.projectDirectory.dir("src/main/jniLibs"))
 }
 

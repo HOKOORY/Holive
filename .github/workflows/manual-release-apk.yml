@@ -31,6 +31,20 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
+      - name: Validate native artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ ! -f "app/src/main/cpp/CMakeLists.txt" ]]; then
+            for abi in armeabi-v7a arm64-v8a x86 x86_64; do
+              test -f "app/src/main/jniLibs/${abi}/libholive_native.so" || {
+                echo "Missing prebuilt native library: app/src/main/jniLibs/${abi}/libholive_native.so"
+                exit 1
+              }
+            done
+          fi
+
       - name: Prepare signing config
         shell: bash
         run: |
@@ -99,16 +113,19 @@ jobs:
           ARM64=$(find app/build/outputs/apk/release -type f \( -name "*arm64-v8a*release*.apk" -o -name "*arm64-v8a*.apk" \) | head -n1)
           ARMV7=$(find app/build/outputs/apk/release -type f \( -name "*armeabi-v7a*release*.apk" -o -name "*armeabi-v7a*.apk" \) | head -n1)
           X86=$(find app/build/outputs/apk/release -type f \( -name "*x86*release*.apk" -o -name "*x86*.apk" \) | grep -v "x86_64" | head -n1)
+          X86_64=$(find app/build/outputs/apk/release -type f \( -name "*x86_64*release*.apk" -o -name "*x86_64*.apk" \) | head -n1)
           UNIVERSAL=$(find app/build/outputs/apk/release -type f \( -name "*universal*release*.apk" -o -name "*universal*.apk" \) | head -n1)
 
           [[ -n "$ARM64" ]] || { echo "Missing arm64-v8a apk"; exit 1; }
           [[ -n "$ARMV7" ]] || { echo "Missing armeabi-v7a apk"; exit 1; }
           [[ -n "$X86" ]] || { echo "Missing x86 apk"; exit 1; }
+          [[ -n "$X86_64" ]] || { echo "Missing x86_64 apk"; exit 1; }
           [[ -n "$UNIVERSAL" ]] || { echo "Missing universal apk"; exit 1; }
 
           echo "arm64=$ARM64" >> "$GITHUB_OUTPUT"
           echo "armv7=$ARMV7" >> "$GITHUB_OUTPUT"
           echo "x86=$X86" >> "$GITHUB_OUTPUT"
+          echo "x86_64=$X86_64" >> "$GITHUB_OUTPUT"
           echo "universal=$UNIVERSAL" >> "$GITHUB_OUTPUT"
 
       - name: Create Git tag
@@ -128,4 +145,5 @@ jobs:
             ${{ steps.apks.outputs.arm64 }}
             ${{ steps.apks.outputs.armv7 }}
             ${{ steps.apks.outputs.x86 }}
+            ${{ steps.apks.outputs.x86_64 }}
             ${{ steps.apks.outputs.universal }}

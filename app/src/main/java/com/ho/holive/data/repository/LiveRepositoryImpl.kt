@@ -6,6 +6,7 @@ import androidx.paging.PagingData
 import androidx.paging.map
 import com.ho.holive.core.common.AppResult
 import com.ho.holive.core.common.Logger
+import com.ho.holive.core.nativebridge.NativeEndpointBridge
 import com.ho.holive.data.local.dao.LiveRoomDao
 import com.ho.holive.data.local.entity.LiveRoomEntity
 import com.ho.holive.data.remote.LiveApiService
@@ -40,7 +41,7 @@ class LiveRepositoryImpl @Inject constructor(
 
     override suspend fun getPlatforms(): AppResult<List<LivePlatform>> {
         return try {
-            val platforms = apiService.getPlatforms().platforms.map { platform ->
+            val platforms = apiService.getPlatforms(NativeEndpointBridge.platformsUrl()).platforms.map { platform ->
                 LivePlatform(
                     title = platform.title,
                     address = platform.address,
@@ -58,18 +59,21 @@ class LiveRepositoryImpl @Inject constructor(
     override suspend fun refreshRooms(platform: LivePlatform): AppResult<Unit> {
         return try {
             val now = System.currentTimeMillis()
-            val roomEntities = apiService.getPlatformRooms(platform.address).anchors.map { anchor ->
-                LiveRoomEntity(
-                    id = "${platform.address}_${anchor.title}",
-                    title = anchor.title,
-                    coverUrl = anchor.coverUrl.normalizeImageUrl(),
-                    streamUrl = anchor.streamUrl,
-                    platformTitle = platform.title,
-                    platformIconUrl = platform.iconUrl,
-                    viewerCount = platform.onlineCount,
-                    updatedAt = now,
-                )
-            }
+            val roomEntities = apiService
+                .getPlatformRooms(NativeEndpointBridge.platformRoomsUrl(platform.address))
+                .anchors
+                .map { anchor ->
+                    LiveRoomEntity(
+                        id = "${platform.address}_${anchor.title}",
+                        title = anchor.title,
+                        coverUrl = anchor.coverUrl.normalizeImageUrl(),
+                        streamUrl = anchor.streamUrl,
+                        platformTitle = platform.title,
+                        platformIconUrl = platform.iconUrl,
+                        viewerCount = platform.onlineCount,
+                        updatedAt = now,
+                    )
+                }
 
             liveRoomDao.clearAll()
             liveRoomDao.insertAll(roomEntities)
