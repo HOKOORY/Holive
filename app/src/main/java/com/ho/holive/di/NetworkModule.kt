@@ -26,8 +26,15 @@ import retrofit2.Retrofit
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
-    private const val PRIMARY_HOST = "vercel.hokoory.top"
-    private const val FALLBACK_HOST = "vercel.hokoory.top"
+    private const val PRIMARY_HOST = "api.hclyz.com"
+    private const val FALLBACK_HOST = "api.hclyz.com"
+    private const val HEADER_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+    private const val HEADER_ACCEPT = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
+    private const val HEADER_ACCEPT_ENCODING = "gzip, deflate"
+    private const val HEADER_ACCEPT_LANGUAGE = "zh-CN,zh;q=0.9,en;q=0.8"
+    private const val HEADER_SEC_CH_UA = "\"Chromium\";v=\"124\", \"Google Chrome\";v=\"124\", \"Not-A.Brand\";v=\"99\""
+    private const val HEADER_SEC_CH_UA_MOBILE = "?0"
+    private const val HEADER_SEC_CH_UA_PLATFORM = "\"Windows\""
 
 
     @Provides
@@ -53,12 +60,30 @@ object NetworkModule {
             .connectTimeout(15, TimeUnit.SECONDS)
             .readTimeout(20, TimeUnit.SECONDS)
             .writeTimeout(20, TimeUnit.SECONDS)
-            .addInterceptor(logging)
             .addInterceptor { chain ->
                 val request = chain.request().newBuilder()
+                    .header("User-Agent", HEADER_USER_AGENT)
+                    .header("Accept", HEADER_ACCEPT)
+                    .header("Accept-Encoding", HEADER_ACCEPT_ENCODING)
+                    .header("Accept-Language", HEADER_ACCEPT_LANGUAGE)
+                    .header("Cache-Control", "no-cache")
+                    .header("Pragma", "no-cache")
+                    .header("Upgrade-Insecure-Requests", "1")
+                    .header("Sec-CH-UA", HEADER_SEC_CH_UA)
+                    .header("Sec-CH-UA-Mobile", HEADER_SEC_CH_UA_MOBILE)
+                    .header("Sec-CH-UA-Platform", HEADER_SEC_CH_UA_PLATFORM)
+                    .header("Sec-Fetch-Dest", "document")
+                    .header("Sec-Fetch-Mode", "navigate")
+                    .header("Sec-Fetch-Site", "none")
+                    .header("Sec-Fetch-User", "?1")
                     // The upstream HTTP endpoint is unstable with keep-alive connections.
                     .header("Connection", "close")
                     .build()
+                chain.proceed(request)
+            }
+            .addInterceptor(logging)
+            .addInterceptor { chain ->
+                val request = chain.request()
                 try {
                     proceedWithDecompression(chain, request)
                 } catch (ioe: IOException) {

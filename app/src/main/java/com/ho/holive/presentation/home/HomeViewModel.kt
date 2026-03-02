@@ -36,6 +36,7 @@ class HomeViewModel @Inject constructor(
 
     private val queryState = MutableStateFlow("")
     private var roomsRefreshJob: Job? = null
+    private var platformsLoadJob: Job? = null
 
     val pagedRooms = queryState
         .debounce(350)
@@ -48,8 +49,10 @@ class HomeViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             connectivityObserver.observe().collect { connected ->
+                val previousConnected = _uiState.value.networkConnected
                 _uiState.update { it.copy(networkConnected = connected) }
-                if (connected && _uiState.value.platforms.isEmpty()) {
+                val reconnected = !previousConnected && connected
+                if (reconnected && _uiState.value.platforms.isEmpty()) {
                     loadPlatforms()
                 }
             }
@@ -82,11 +85,14 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun loadPlatforms() {
-        viewModelScope.launch {
+        if (platformsLoadJob?.isActive == true) return
+
+        platformsLoadJob = viewModelScope.launch {
             _uiState.update { it.copy(isLoadingPlatforms = true, errorMessage = null) }
             when (val result = getPlatformsUseCase()) {
                 is AppResult.Success -> {
-                    val platforms = result.data.filter { it.onlineCount > 0 }
+                    val onlinePlatforms = result.data.filter { it.onlineCount > 0 }
+                    val platforms = onlinePlatforms.ifEmpty { result.data }
                     val preferredAddress = _uiState.value.selectedPlatformAddress
                     val selected = platforms.firstOrNull { it.address == preferredAddress } ?: platforms.firstOrNull()
 
