@@ -14,8 +14,6 @@ Command line:
 
 ## 2. Switch Mock / Real environment
 
-- Real API is enabled by default:
-  - `BuildConfig.BASE_URL = http://api.hclyz.com:81/`
 - You can switch by editing `app/build.gradle.kts`:
   - Change `BASE_URL` to your own server.
 - Playback URL strategy:

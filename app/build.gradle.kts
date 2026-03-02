@@ -34,7 +34,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
 
-        buildConfigField("String", "BASE_URL", "\"http://api.hclyz.com:81/\"")
+        buildConfigField("String", "BASE_URL", "\"https://vercel.hokoory.top/httpproxy/api.hclyz.com:81/mf/\"")
         buildConfigField("boolean", "ENABLE_HTTP_LOG", "true")
     }
 
