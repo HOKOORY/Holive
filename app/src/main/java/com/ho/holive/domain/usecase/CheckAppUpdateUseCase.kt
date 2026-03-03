@@ -72,8 +72,8 @@ class CheckAppUpdateUseCase @Inject constructor(
 
     companion object {
         private const val LATEST_RELEASE_URL =
-            "https://api.github.com/repos/HOKOORY/Holive/releases/latest"
+            "https://proxy.hokoory.top/https://api.github.com/repos/HOKOORY/Holive/releases/latest"
         private const val DEFAULT_RELEASE_WEB_URL =
-            "https://github.com/HOKOORY/Holive/releases/latest"
+            "https://proxy.hokoory.top/https://github.com/HOKOORY/Holive/releases/latest"
     }
 }
