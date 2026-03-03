@@ -1,5 +1,6 @@
 package com.ho.holive.presentation.home
 
+import com.ho.holive.domain.model.AppUpdateInfo
 import com.ho.holive.domain.model.LivePlatform
 
 data class HomeUiState(
@@ -10,4 +11,5 @@ data class HomeUiState(
     val isRefreshingRooms: Boolean = false,
     val errorMessage: String? = null,
     val networkConnected: Boolean = true,
+    val availableUpdate: AppUpdateInfo? = null,
 )

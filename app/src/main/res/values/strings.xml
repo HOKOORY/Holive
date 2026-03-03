@@ -1,4 +1,4 @@
-﻿<resources>
+<resources>
     <string name="app_name">Holive</string>
     <string name="home_title">Fresh Live</string>
     <string name="platform_section_title">Platforms</string>
@@ -32,4 +32,7 @@
     <string name="request_permissions">Enable notifications/camera/mic</string>
     <string name="open_settings">Open settings</string>
     <string name="play_failed">Play failed, tap retry</string>
+    <string name="update_available_title">Update Available</string>
+    <string name="update_available_message">A new version %1$s is available.</string>
+    <string name="update_now">Update</string>
 </resources>

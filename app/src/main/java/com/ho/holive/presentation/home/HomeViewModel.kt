@@ -3,16 +3,21 @@
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.cachedIn
+import com.ho.holive.BuildConfig
 import com.ho.holive.core.common.AppResult
+import com.ho.holive.core.common.Logger
 import com.ho.holive.core.network.ConnectivityObserver
 import com.ho.holive.domain.model.LivePlatform
+import com.ho.holive.domain.usecase.CheckAppUpdateUseCase
 import com.ho.holive.domain.usecase.GetPlatformsUseCase
 import com.ho.holive.domain.usecase.ObserveRoomsUseCase
 import com.ho.holive.domain.usecase.RefreshRoomsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -28,6 +33,7 @@ class HomeViewModel @Inject constructor(
     observeRoomsUseCase: ObserveRoomsUseCase,
     private val getPlatformsUseCase: GetPlatformsUseCase,
     private val refreshRoomsUseCase: RefreshRoomsUseCase,
+    private val checkAppUpdateUseCase: CheckAppUpdateUseCase,
     connectivityObserver: ConnectivityObserver,
 ) : ViewModel() {
 
@@ -57,6 +63,7 @@ class HomeViewModel @Inject constructor(
                 }
             }
         }
+        checkForUpdate()
         loadPlatforms()
     }
 
@@ -82,6 +89,10 @@ class HomeViewModel @Inject constructor(
         } else {
             loadPlatforms()
         }
+    }
+
+    fun dismissUpdateDialog() {
+        _uiState.update { it.copy(availableUpdate = null) }
     }
 
     private fun loadPlatforms() {
@@ -140,6 +151,30 @@ class HomeViewModel @Inject constructor(
                             errorMessage = result.message ?: "unknown error",
                         )
                     }
+                }
+
+                AppResult.Loading -> Unit
+            }
+        }
+    }
+
+    private fun checkForUpdate() {
+        viewModelScope.launch {
+            val result = withContext(Dispatchers.IO) {
+                checkAppUpdateUseCase(
+                    currentVersionName = BuildConfig.VERSION_NAME,
+                    currentVersionCode = BuildConfig.VERSION_CODE,
+                )
+            }
+
+            when (result) {
+                is AppResult.Success -> {
+                    val update = result.data ?: return@launch
+                    _uiState.update { it.copy(availableUpdate = update) }
+                }
+
+                is AppResult.Error -> {
+                    Logger.e("checkForUpdate failed", result.throwable)
                 }
 
                 AppResult.Loading -> Unit

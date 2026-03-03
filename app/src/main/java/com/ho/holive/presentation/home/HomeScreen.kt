@@ -1,5 +1,7 @@
-﻿package com.ho.holive.presentation.home
+package com.ho.holive.presentation.home
 
+import android.content.Intent
+import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -28,6 +30,7 @@ import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
@@ -286,6 +289,40 @@ fun HomeScreen(
                 }
             }
         }
+    }
+
+    uiState.availableUpdate?.let { update ->
+        AlertDialog(
+            onDismissRequest = { viewModel.dismissUpdateDialog() },
+            title = {
+                Text(text = stringResource(id = R.string.update_available_title))
+            },
+            text = {
+                Text(
+                    text = stringResource(
+                        id = R.string.update_available_message,
+                        update.versionName,
+                    ),
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.dismissUpdateDialog()
+                        context.startActivity(
+                            Intent(Intent.ACTION_VIEW, Uri.parse(update.releaseUrl)),
+                        )
+                    },
+                ) {
+                    Text(text = stringResource(id = R.string.update_now))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.dismissUpdateDialog() }) {
+                    Text(text = stringResource(id = R.string.close))
+                }
+            },
+        )
     }
 }
 

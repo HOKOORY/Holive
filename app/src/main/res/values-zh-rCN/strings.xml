@@ -1,4 +1,4 @@
-﻿<resources>
+<resources>
     <string name="app_name">好直播</string>
     <string name="home_title">清新直播</string>
     <string name="platform_section_title">平台</string>
@@ -32,4 +32,7 @@
     <string name="request_permissions">开启通知/相机/麦克风权限</string>
     <string name="open_settings">去设置</string>
     <string name="play_failed">播放失败，点击重试</string>
+    <string name="update_available_title">发现新版本</string>
+    <string name="update_available_message">检测到新版本 %1$s，是否立即更新？</string>
+    <string name="update_now">去更新</string>
 </resources>
