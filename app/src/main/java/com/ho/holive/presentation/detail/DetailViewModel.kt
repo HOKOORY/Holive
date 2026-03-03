@@ -88,6 +88,9 @@ class DetailViewModel @Inject constructor(
                 it.copy(
                     loading = true,
                     currentRoomId = roomId,
+                    room = null,
+                    previousRoomId = null,
+                    nextRoomId = null,
                     errorMessage = null,
                     playerErrorMessage = null,
                 )
@@ -117,6 +120,9 @@ class DetailViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             loading = false,
+                            room = null,
+                            previousRoomId = null,
+                            nextRoomId = null,
                             errorMessage = result.message ?: "load detail failed",
                         )
                     }

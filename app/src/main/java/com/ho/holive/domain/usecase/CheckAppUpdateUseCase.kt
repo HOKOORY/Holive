@@ -4,6 +4,7 @@ import com.ho.holive.core.common.AppResult
 import com.ho.holive.data.remote.GithubApiService
 import com.ho.holive.domain.model.AppUpdateInfo
 import javax.inject.Inject
+import kotlinx.coroutines.CancellationException
 
 class CheckAppUpdateUseCase @Inject constructor(
     private val githubApiService: GithubApiService,
@@ -22,6 +23,7 @@ class CheckAppUpdateUseCase @Inject constructor(
             )
             AppResult.Success(if (hasUpdate) latest else null)
         } catch (throwable: Throwable) {
+            if (throwable is CancellationException) throw throwable
             AppResult.Error(throwable)
         }
     }
@@ -65,6 +67,7 @@ class CheckAppUpdateUseCase @Inject constructor(
         for (index in 0 until maxSize) {
             val l = leftParts.getOrElse(index) { 0 }
             val r = rightParts.getOrElse(index) { 0 }
+
             if (l != r) return l.compareTo(r)
         }
         return 0

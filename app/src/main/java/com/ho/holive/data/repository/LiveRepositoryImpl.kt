@@ -16,6 +16,7 @@ import com.ho.holive.domain.model.LiveRoomDetail
 import com.ho.holive.domain.repository.LiveRepository
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -51,6 +52,7 @@ class LiveRepositoryImpl @Inject constructor(
             }
             AppResult.Success(platforms)
         } catch (throwable: Throwable) {
+            if (throwable is CancellationException) throw throwable
             Logger.e("getPlatforms failed", throwable)
             AppResult.Error(throwable)
         }
@@ -63,8 +65,9 @@ class LiveRepositoryImpl @Inject constructor(
                 .getPlatformRooms(NativeEndpointBridge.platformRoomsUrl(platform.address))
                 .anchors
                 .map { anchor ->
+                    val streamKey = anchor.streamUrl.trim().ifBlank { anchor.title.trim() }
                     LiveRoomEntity(
-                        id = "${platform.address}_${anchor.title}",
+                        id = "${platform.address}_${anchor.title}_${streamKey}",
                         title = anchor.title,
                         coverUrl = anchor.coverUrl.normalizeImageUrl(),
                         streamUrl = anchor.streamUrl,
@@ -79,6 +82,7 @@ class LiveRepositoryImpl @Inject constructor(
             liveRoomDao.insertAll(roomEntities)
             AppResult.Success(Unit)
         } catch (throwable: Throwable) {
+            if (throwable is CancellationException) throw throwable
             Logger.e("refreshRooms failed for ${platform.title}", throwable)
             AppResult.Error(throwable)
         }
@@ -90,6 +94,7 @@ class LiveRepositoryImpl @Inject constructor(
                 ?: return AppResult.Error(IllegalArgumentException("room not found"))
             AppResult.Success(entity.toDetail())
         } catch (throwable: Throwable) {
+            if (throwable is CancellationException) throw throwable
             AppResult.Error(throwable)
         }
     }

@@ -3,6 +3,7 @@ package com.ho.holive.domain.usecase
 import androidx.paging.PagingData
 import com.google.common.truth.Truth.assertThat
 import com.ho.holive.core.common.AppResult
+import com.ho.holive.domain.model.LivePlatform
 import com.ho.holive.domain.model.LiveRoom
 import com.ho.holive.domain.model.LiveRoomDetail
 import com.ho.holive.domain.model.Quality
@@ -14,12 +15,19 @@ import org.junit.Test
 
 class RefreshRoomsUseCaseTest {
 
+    private val platform = LivePlatform(
+        title = "Test Platform",
+        address = "test-platform",
+        iconUrl = "https://example.com/icon.png",
+        onlineCount = 100,
+    )
+
     @Test
     fun `invoke returns success when repository succeeds`() = runTest {
         val repository = FakeLiveRepository(refreshResult = AppResult.Success(Unit))
         val useCase = RefreshRoomsUseCase(repository)
 
-        val result = useCase()
+        val result = useCase(platform)
 
         assertThat(result).isInstanceOf(AppResult.Success::class.java)
     }
@@ -31,7 +39,7 @@ class RefreshRoomsUseCaseTest {
         )
         val useCase = RefreshRoomsUseCase(repository)
 
-        val result = useCase()
+        val result = useCase(platform)
 
         assertThat(result).isInstanceOf(AppResult.Error::class.java)
     }
@@ -59,12 +67,19 @@ class GetRoomDetailUseCaseTest {
 }
 
 private class FakeLiveRepository(
+    private val platformsResult: AppResult<List<LivePlatform>> = AppResult.Success(emptyList()),
     private val refreshResult: AppResult<Unit> = AppResult.Success(Unit),
     private val detailResult: AppResult<LiveRoomDetail> = AppResult.Error(Throwable("missing")),
 ) : LiveRepository {
     override fun observePagedRooms(query: String): Flow<PagingData<LiveRoom>> = flowOf(PagingData.empty())
 
-    override suspend fun refreshRooms(): AppResult<Unit> = refreshResult
+    override suspend fun getPlatforms(): AppResult<List<LivePlatform>> = platformsResult
+
+    override suspend fun refreshRooms(platform: LivePlatform): AppResult<Unit> = refreshResult
 
     override suspend fun getRoomDetail(roomId: String): AppResult<LiveRoomDetail> = detailResult
+
+    override suspend fun getPreviousRoomId(roomId: String): String? = null
+
+    override suspend fun getNextRoomId(roomId: String): String? = null
 }
