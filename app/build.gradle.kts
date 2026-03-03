@@ -16,6 +16,8 @@ plugins {
 val nativeAbis = listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
 val cmakeFile = file("src/main/cpp/CMakeLists.txt")
 val hasNativeSource = cmakeFile.exists()
+val usePrebuiltNative = providers.gradleProperty("usePrebuiltNative").orNull == "true"
+val enableCmakeNative = hasNativeSource && !usePrebuiltNative
 
 android {
     namespace = "com.ho.holive"
@@ -44,7 +46,7 @@ android {
         buildConfigField("String", "BASE_URL", "\"https://localhost/\"")
         buildConfigField("boolean", "ENABLE_HTTP_LOG", "true")
 
-        if (hasNativeSource) {
+        if (enableCmakeNative) {
             externalNativeBuild {
                 cmake {
                     cppFlags += "-std=c++17"
@@ -100,6 +102,17 @@ android {
         buildConfig = true
     }
 
+    sourceSets {
+        getByName("main") {
+            if (enableCmakeNative) {
+                // Avoid duplicate .so merge when both CMake output and jniLibs exist.
+                jniLibs.setSrcDirs(emptyList<String>())
+            } else {
+                jniLibs.srcDirs("src/main/jniLibs")
+            }
+        }
+    }
+
     splits {
         abi {
             isEnable = true
@@ -109,7 +122,7 @@ android {
         }
     }
 
-    if (hasNativeSource) {
+    if (enableCmakeNative) {
         externalNativeBuild {
             cmake {
                 path = cmakeFile
@@ -210,6 +223,7 @@ detekt {
 tasks.register<Copy>("exportNativeSo") {
     group = "build"
     description = "Build release native library and copy libholive_native.so into src/main/jniLibs for all ABIs."
+    onlyIf { hasNativeSource }
     dependsOn("externalNativeBuildRelease")
     val abis = nativeAbis.toSet()
     from(layout.buildDirectory.dir("intermediates/cxx/RelWithDebInfo")) {
