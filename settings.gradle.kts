@@ -1,3 +1,8 @@
+val requiredJdk = JavaVersion.VERSION_21
+check(JavaVersion.current() == requiredJdk) {
+    "Holive requires JDK 21. Current JDK: ${System.getProperty("java.version")} (${JavaVersion.current()})"
+}
+
 pluginManagement {
     repositories {
         google()
