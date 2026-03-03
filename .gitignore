@@ -21,6 +21,7 @@ captures/
 *.aab
 *.ap_
 output-metadata.json
+*.so
 
 # Signing / secrets
 *.jks

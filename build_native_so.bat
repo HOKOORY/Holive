@@ -15,7 +15,7 @@ if not exist "app\src\main\cpp\CMakeLists.txt" (
 )
 
 echo [INFO] Building native libraries and exporting to app\src\main\jniLibs ...
-call gradlew.bat :app:exportNativeSo --no-daemon
+call gradlew.bat :app:exportNativeSo --no-daemon --no-configuration-cache
 if errorlevel 1 (
   echo [ERROR] Gradle task failed: :app:exportNativeSo
   exit /b 1
