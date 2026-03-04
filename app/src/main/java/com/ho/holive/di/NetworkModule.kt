@@ -12,6 +12,7 @@ import java.io.IOException
 import java.util.zip.Inflater
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -39,6 +40,7 @@ object NetworkModule {
 
     @Provides
     @Singleton
+    @OptIn(ExperimentalSerializationApi::class)
     fun provideJson(): Json = Json {
         ignoreUnknownKeys = true
         explicitNulls = false

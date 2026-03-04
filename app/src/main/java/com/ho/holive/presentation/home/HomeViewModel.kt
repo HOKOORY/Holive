@@ -14,6 +14,7 @@ import com.ho.holive.domain.usecase.ObserveRoomsUseCase
 import com.ho.holive.domain.usecase.RefreshRoomsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
@@ -100,31 +101,59 @@ class HomeViewModel @Inject constructor(
 
         platformsLoadJob = viewModelScope.launch {
             _uiState.update { it.copy(isLoadingPlatforms = true, errorMessage = null) }
-            when (val result = getPlatformsUseCase()) {
-                is AppResult.Success -> {
-                    val onlinePlatforms = result.data.filter { it.onlineCount > 0 }
-                    val platforms = onlinePlatforms.ifEmpty { result.data }
-                    val preferredAddress = _uiState.value.selectedPlatformAddress
-                    val selected = platforms.firstOrNull { it.address == preferredAddress } ?: platforms.firstOrNull()
+            try {
+                when (val result = getPlatformsUseCase()) {
+                    is AppResult.Success -> {
+                        val onlinePlatforms = result.data.filter { it.onlineCount > 0 }
+                        val platforms = onlinePlatforms.ifEmpty { result.data }
+                        val preferredAddress = _uiState.value.selectedPlatformAddress
+                        val selected = platforms.firstOrNull { it.address == preferredAddress } ?: platforms.firstOrNull()
 
-                    _uiState.update {
-                        it.copy(
-                            platforms = platforms,
-                            selectedPlatformAddress = selected?.address,
-                            isLoadingPlatforms = false,
-                            errorMessage = null,
-                        )
+                        _uiState.update {
+                            it.copy(
+                                platforms = platforms,
+                                selectedPlatformAddress = selected?.address,
+                                isLoadingPlatforms = false,
+                                errorMessage = null,
+                            )
+                        }
+
+                        if (selected != null) {
+                            loadRoomsForPlatform(selected)
+                        }
                     }
 
-                    if (selected != null) {
-                        loadRoomsForPlatform(selected)
+                    is AppResult.Error -> {
+                        _uiState.update {
+                            it.copy(
+                                isLoadingPlatforms = false,
+                                errorMessage = result.message ?: "unknown error",
+                            )
+                        }
                     }
+
+                    AppResult.Loading -> Unit
                 }
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } finally {
+                _uiState.update { state ->
+                    if (state.isLoadingPlatforms) state.copy(isLoadingPlatforms = false) else state
+                }
+            }
+        }
+    }
+
+    private fun loadRoomsForPlatform(platform: LivePlatform) {
+        roomsRefreshJob?.cancel()
+        val refreshJob = viewModelScope.launch {
+            _uiState.update { it.copy(isRefreshingRooms = true, errorMessage = null) }
+            when (val result = refreshRoomsUseCase(platform)) {
+                is AppResult.Success -> Unit
 
                 is AppResult.Error -> {
                     _uiState.update {
                         it.copy(
-                            isLoadingPlatforms = false,
                             errorMessage = result.message ?: "unknown error",
                         )
                     }
@@ -133,27 +162,10 @@ class HomeViewModel @Inject constructor(
                 AppResult.Loading -> Unit
             }
         }
-    }
-
-    private fun loadRoomsForPlatform(platform: LivePlatform) {
-        roomsRefreshJob?.cancel()
-        roomsRefreshJob = viewModelScope.launch {
-            _uiState.update { it.copy(isRefreshingRooms = true, errorMessage = null) }
-            when (val result = refreshRoomsUseCase(platform)) {
-                is AppResult.Success -> {
-                    _uiState.update { it.copy(isRefreshingRooms = false) }
-                }
-
-                is AppResult.Error -> {
-                    _uiState.update {
-                        it.copy(
-                            isRefreshingRooms = false,
-                            errorMessage = result.message ?: "unknown error",
-                        )
-                    }
-                }
-
-                AppResult.Loading -> Unit
+        roomsRefreshJob = refreshJob
+        refreshJob.invokeOnCompletion {
+            if (roomsRefreshJob === refreshJob) {
+                _uiState.update { it.copy(isRefreshingRooms = false) }
             }
         }
     }

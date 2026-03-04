@@ -1,4 +1,4 @@
-﻿package com.ho.holive.data.repository
+package com.ho.holive.data.repository
 
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
@@ -14,6 +14,8 @@ import com.ho.holive.domain.model.LivePlatform
 import com.ho.holive.domain.model.LiveRoom
 import com.ho.holive.domain.model.LiveRoomDetail
 import com.ho.holive.domain.repository.LiveRepository
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CancellationException
@@ -44,7 +46,7 @@ class LiveRepositoryImpl @Inject constructor(
         return try {
             val platforms = apiService.getPlatforms(NativeEndpointBridge.platformsUrl()).platforms.map { platform ->
                 LivePlatform(
-                    title = platform.title,
+                    title = platform.title.decodeDisplayText(),
                     address = platform.address,
                     iconUrl = platform.iconUrl.normalizeImageUrl(),
                     onlineCount = platform.onlineCount.toIntOrNull() ?: 0,
@@ -64,17 +66,19 @@ class LiveRepositoryImpl @Inject constructor(
             val roomEntities = apiService
                 .getPlatformRooms(NativeEndpointBridge.platformRoomsUrl(platform.address))
                 .anchors
-                .map { anchor ->
-                    val streamKey = anchor.streamUrl.trim().ifBlank { anchor.title.trim() }
+                .mapIndexed { index, anchor ->
+                    val rawTitle = anchor.title.trim()
+                    val streamKey = anchor.streamUrl.trim().ifBlank { rawTitle }
                     LiveRoomEntity(
-                        id = "${platform.address}_${anchor.title}_${streamKey}",
-                        title = anchor.title,
+                        id = "${platform.address}_${rawTitle}_${streamKey}",
+                        title = rawTitle.decodeDisplayText(),
                         coverUrl = anchor.coverUrl.normalizeImageUrl(),
                         streamUrl = anchor.streamUrl,
                         platformTitle = platform.title,
                         platformIconUrl = platform.iconUrl,
                         viewerCount = platform.onlineCount,
-                        updatedAt = now,
+                        // Keep list order stable and aligned with UI order for prev/next switching.
+                        updatedAt = now - index,
                     )
                 }
 
@@ -123,6 +127,17 @@ class LiveRepositoryImpl @Inject constructor(
         return when {
             value.startsWith("//") -> "https:$value"
             else -> value
+        }
+    }
+
+    private fun String.decodeDisplayText(): String {
+        val value = trim()
+        if (value.isEmpty()) return value
+        if (!value.contains('%') && !value.contains('+')) return value
+        return try {
+            URLDecoder.decode(value, StandardCharsets.UTF_8.name())
+        } catch (_: IllegalArgumentException) {
+            value
         }
     }
 }

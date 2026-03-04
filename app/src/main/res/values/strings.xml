@@ -5,13 +5,15 @@
     <string name="switch_platform">Switch</string>
     <string name="platform_search_hint">Search platform</string>
     <string name="rooms_section_title">Live Rooms</string>
+    <string name="rooms_section_title_with_platform">%1$s Live Rooms</string>
     <string name="search_hint">Search live room</string>
     <string name="retry">Retry</string>
+    <string name="refresh">Refresh</string>
     <string name="close">Close</string>
     <string name="empty_text">No live rooms found</string>
     <string name="empty_platforms">No platforms available</string>
     <string name="select_platform">Select Platform</string>
-    <string name="select_platform_hint">Tap a platform card to load rooms</string>
+    <string name="select_platform_hint">Tap switch to choose and load rooms</string>
     <string name="selected">Selected</string>
     <string name="swipe_hint">Swipe left for previous room, swipe right for next room</string>
     <string name="brightness_percent">Brightness %1$d%%</string>
@@ -35,4 +37,10 @@
     <string name="update_available_title">Update Available</string>
     <string name="update_available_message">A new version %1$s is available.</string>
     <string name="update_now">Update</string>
+    <string name="permission_title">Permission Required</string>
+    <string name="loading_rooms">Loading live rooms...</string>
+    <string name="platform_meta_format">Online: %1$d - %2$d platforms</string>
+    <string name="platform_sheet_count">%1$d / %2$d</string>
+    <string name="prev_room">Previous</string>
+    <string name="next_room">Next</string>
 </resources>
