@@ -37,8 +37,8 @@ android {
         applicationId = "com.ho.holive"
         minSdk = 24
         targetSdk = 34
-        versionCode = 14
-        versionName = "1.12"
+        versionCode = 15
+        versionName = "1.13"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
