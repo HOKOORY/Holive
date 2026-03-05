@@ -2,8 +2,6 @@ package com.ho.holive.presentation.home
 
 import android.content.Intent
 import android.net.Uri
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -69,8 +67,6 @@ import coil.compose.AsyncImage
 import com.ho.holive.R
 import com.ho.holive.domain.model.LivePlatform
 import com.ho.holive.domain.model.LiveRoom
-import com.ho.holive.presentation.component.PermissionBanner
-import com.ho.holive.presentation.permission.PermissionUtils
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -84,13 +80,6 @@ fun HomeScreen(
     val context = LocalContext.current
     var showPlatformSheet by remember { mutableStateOf(false) }
     var platformSearch by remember { mutableStateOf("") }
-
-    var permissionGranted by remember { mutableStateOf(PermissionUtils.hasPermissions(context)) }
-    val permissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestMultiplePermissions(),
-    ) { result ->
-        permissionGranted = result.values.all { it }
-    }
 
     val selectedPlatform = uiState.platforms.firstOrNull { it.address == uiState.selectedPlatformAddress }
     val refreshing = uiState.isLoadingPlatforms || uiState.isRefreshingRooms
@@ -136,16 +125,6 @@ fun HomeScreen(
                             rooms.refresh()
                         },
                     )
-                }
-
-                if (!permissionGranted) {
-                    item {
-                        PermissionBanner(
-                            onRequestPermission = {
-                                permissionLauncher.launch(PermissionUtils.requiredPermissions())
-                            },
-                        )
-                    }
                 }
 
                 if (!uiState.networkConnected) {

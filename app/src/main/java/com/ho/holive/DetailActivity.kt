@@ -353,9 +353,14 @@ class DetailActivity : ComponentActivity() {
 
         val room = state.room
         if (room == null) {
-            playerTitleText.text = getString(R.string.play_failed)
-            playerErrorText.isVisible = true
-            playerErrorText.text = state.errorMessage ?: getString(R.string.play_failed)
+            if (state.loading) {
+                playerTitleText.text = getString(R.string.loading_rooms)
+                playerErrorText.isVisible = false
+            } else {
+                playerTitleText.text = getString(R.string.play_failed)
+                playerErrorText.isVisible = true
+                playerErrorText.text = state.errorMessage ?: getString(R.string.play_failed)
+            }
             pauseButton.isEnabled = false
             updatePauseButton(false)
         } else {

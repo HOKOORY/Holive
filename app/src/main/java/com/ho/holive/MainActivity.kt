@@ -9,7 +9,6 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -34,7 +33,6 @@ import com.ho.holive.domain.model.AppUpdateInfo
 import com.ho.holive.domain.model.LivePlatform
 import com.ho.holive.presentation.home.HomeUiState
 import com.ho.holive.presentation.home.HomeViewModel
-import com.ho.holive.presentation.permission.PermissionUtils
 import com.ho.holive.presentation.xml.PlatformSelectorBottomSheet
 import com.ho.holive.presentation.xml.RoomPagingAdapter
 import dagger.hilt.android.AndroidEntryPoint
@@ -47,8 +45,6 @@ class MainActivity : ComponentActivity() {
     private lateinit var rootView: View
     private lateinit var toolbar: MaterialToolbar
     private lateinit var searchEdit: TextInputEditText
-    private lateinit var permissionBanner: View
-    private lateinit var permissionButton: MaterialButton
     private lateinit var networkBanner: TextView
     private lateinit var platformIcon: ImageView
     private lateinit var platformTitle: TextView
@@ -71,12 +67,6 @@ class MainActivity : ComponentActivity() {
     private var latestState: HomeUiState = HomeUiState()
     private var lastShownError: String? = null
 
-    private val permissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions(),
-    ) {
-        renderPermissionBanner()
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -86,7 +76,6 @@ class MainActivity : ComponentActivity() {
         setupInsets()
         setupList()
         setupActions()
-        renderPermissionBanner()
         observeUi()
     }
 
@@ -94,8 +83,6 @@ class MainActivity : ComponentActivity() {
         rootView = findViewById(R.id.mainRoot)
         toolbar = findViewById(R.id.toolbar)
         searchEdit = findViewById(R.id.searchEdit)
-        permissionBanner = findViewById(R.id.permissionBanner)
-        permissionButton = findViewById(R.id.permissionButton)
         networkBanner = findViewById(R.id.networkBanner)
         platformIcon = findViewById(R.id.platformIcon)
         platformTitle = findViewById(R.id.platformTitle)
@@ -140,9 +127,6 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        permissionButton.setOnClickListener {
-            permissionLauncher.launch(PermissionUtils.requiredPermissions())
-        }
         switchPlatformButton.setOnClickListener {
             showPlatformSelector()
         }
@@ -190,10 +174,6 @@ class MainActivity : ComponentActivity() {
             .setDuration(420L)
             .setInterpolator(FastOutSlowInInterpolator())
             .start()
-    }
-
-    private fun renderPermissionBanner() {
-        permissionBanner.isVisible = !PermissionUtils.hasPermissions(this)
     }
 
     private fun renderHomeState(state: HomeUiState) {
@@ -305,11 +285,6 @@ class MainActivity : ComponentActivity() {
             }
             .setCancelable(true)
             .show()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        renderPermissionBanner()
     }
 
     override fun onDestroy() {
