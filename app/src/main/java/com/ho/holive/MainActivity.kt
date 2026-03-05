@@ -108,6 +108,8 @@ class MainActivity : ComponentActivity() {
 
     private fun setupList() {
         recyclerView.layoutManager = LinearLayoutManager(this)
+        recyclerView.setHasFixedSize(true)
+        recyclerView.itemAnimator = null
         recyclerView.adapter = roomAdapter
         roomAdapter.addLoadStateListener { states ->
             latestLoadStates = states
@@ -120,7 +122,7 @@ class MainActivity : ComponentActivity() {
         toolbar.setOnMenuItemClickListener { item ->
             if (item.itemId == R.id.action_refresh) {
                 playRefreshActionAnimation()
-                onRefreshRequested()
+                onPlatformRefreshRequested()
                 true
             } else {
                 false
@@ -163,6 +165,11 @@ class MainActivity : ComponentActivity() {
         // Keep pull-to-refresh gesture but do not show the top spinner.
         swipeRefresh.isRefreshing = false
         viewModel.refresh()
+    }
+
+    private fun onPlatformRefreshRequested() {
+        swipeRefresh.isRefreshing = false
+        viewModel.refreshPlatforms()
     }
 
     private fun playRefreshActionAnimation() {

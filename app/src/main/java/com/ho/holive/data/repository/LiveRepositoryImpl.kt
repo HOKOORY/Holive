@@ -86,8 +86,7 @@ class LiveRepositoryImpl @Inject constructor(
                     )
                 }
 
-            liveRoomDao.clearAll()
-            liveRoomDao.insertAll(roomEntities)
+            liveRoomDao.replaceAll(roomEntities)
             AppResult.Success(Unit)
         } catch (throwable: Throwable) {
             if (throwable is CancellationException) throw throwable

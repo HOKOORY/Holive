@@ -1,9 +1,16 @@
 package com.ho.holive.data.local.entity
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "live_rooms")
+@Entity(
+    tableName = "live_rooms",
+    indices = [
+        Index(value = ["updatedAt"]),
+        Index(value = ["platformTitle", "updatedAt"]),
+    ],
+)
 data class LiveRoomEntity(
     @PrimaryKey val id: String,
     val title: String,

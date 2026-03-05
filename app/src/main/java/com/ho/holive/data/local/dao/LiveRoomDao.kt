@@ -5,6 +5,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import com.ho.holive.data.local.entity.LiveRoomEntity
 
 @Dao
@@ -23,6 +24,12 @@ interface LiveRoomDao {
 
     @Query("DELETE FROM live_rooms")
     suspend fun clearAll()
+
+    @Transaction
+    suspend fun replaceAll(rooms: List<LiveRoomEntity>) {
+        clearAll()
+        insertAll(rooms)
+    }
 
     @Query("SELECT * FROM live_rooms WHERE id = :id LIMIT 1")
     suspend fun findById(id: String): LiveRoomEntity?

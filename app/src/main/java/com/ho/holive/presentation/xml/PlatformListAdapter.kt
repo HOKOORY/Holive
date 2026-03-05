@@ -23,9 +23,10 @@ class PlatformListAdapter(
     fun submitPlatforms(
         platforms: List<LivePlatform>,
         selectedAddress: String?,
+        onCommitted: () -> Unit = {},
     ) {
         this.selectedAddress = selectedAddress
-        submitList(platforms.toList())
+        submitList(platforms.toList(), onCommitted)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PlatformViewHolder {

@@ -22,6 +22,7 @@ object DatabaseModule {
     ): HoliveDatabase {
         return Room.databaseBuilder(context, HoliveDatabase::class.java, "holive.db")
             .addMigrations(HoliveDatabase.MIGRATION_1_2)
+            .addMigrations(HoliveDatabase.MIGRATION_2_3)
             .fallbackToDestructiveMigrationOnDowngrade()
             .build()
     }

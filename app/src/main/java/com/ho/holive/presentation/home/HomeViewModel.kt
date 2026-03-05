@@ -92,6 +92,10 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    fun refreshPlatforms() {
+        loadPlatforms()
+    }
+
     fun dismissUpdateDialog() {
         _uiState.update { it.copy(availableUpdate = null) }
     }
@@ -102,7 +106,10 @@ class HomeViewModel @Inject constructor(
         platformsLoadJob = viewModelScope.launch {
             _uiState.update { it.copy(isLoadingPlatforms = true, errorMessage = null) }
             try {
-                when (val result = getPlatformsUseCase()) {
+                val result = withContext(Dispatchers.IO) {
+                    getPlatformsUseCase()
+                }
+                when (result) {
                     is AppResult.Success -> {
                         val onlinePlatforms = result.data.filter { it.onlineCount > 0 }
                         val platforms = onlinePlatforms.ifEmpty { result.data }
@@ -148,7 +155,10 @@ class HomeViewModel @Inject constructor(
         roomsRefreshJob?.cancel()
         val refreshJob = viewModelScope.launch {
             _uiState.update { it.copy(isRefreshingRooms = true, errorMessage = null) }
-            when (val result = refreshRoomsUseCase(platform)) {
+            val result = withContext(Dispatchers.IO) {
+                refreshRoomsUseCase(platform)
+            }
+            when (result) {
                 is AppResult.Success -> Unit
 
                 is AppResult.Error -> {

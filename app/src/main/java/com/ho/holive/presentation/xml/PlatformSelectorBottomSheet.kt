@@ -33,8 +33,10 @@ object PlatformSelectorBottomSheet {
             onSelected(platform.address)
             dialog.dismiss()
         }
-        recyclerView.layoutManager = LinearLayoutManager(context)
+        val layoutManager = LinearLayoutManager(context)
+        recyclerView.layoutManager = layoutManager
         recyclerView.adapter = adapter
+        var hasAutoPositionedSelected = false
 
         fun render(query: String) {
             val filtered = allPlatforms.filter { platform ->
@@ -51,7 +53,15 @@ object PlatformSelectorBottomSheet {
             )
             emptyText.isVisible = filtered.isEmpty()
             recyclerView.isVisible = filtered.isNotEmpty()
-            adapter.submitPlatforms(filtered, selectedAddress)
+            adapter.submitPlatforms(filtered, selectedAddress) {
+                if (hasAutoPositionedSelected || query.isNotBlank()) return@submitPlatforms
+                val selectedIndex = filtered.indexOfFirst { it.address == selectedAddress }
+                if (selectedIndex < 0) return@submitPlatforms
+                recyclerView.post {
+                    layoutManager.scrollToPositionWithOffset(selectedIndex, 0)
+                }
+                hasAutoPositionedSelected = true
+            }
         }
 
         searchEdit.doAfterTextChanged { editable ->

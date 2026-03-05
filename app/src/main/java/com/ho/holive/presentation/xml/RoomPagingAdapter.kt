@@ -61,12 +61,12 @@ class RoomPagingAdapter(
             platformText.text = item.platformTitle
             viewerText.text = itemView.context.getString(R.string.online_count, item.viewerCount)
             coverImage.load(item.coverUrl) {
-                crossfade(true)
+                crossfade(false)
                 placeholder(R.drawable.logo)
                 error(R.drawable.logo)
             }
             platformIcon.load(item.platformIconUrl) {
-                crossfade(true)
+                crossfade(false)
                 placeholder(R.drawable.logo)
                 error(R.drawable.logo)
             }
