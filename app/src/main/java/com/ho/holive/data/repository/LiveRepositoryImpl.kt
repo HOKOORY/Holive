@@ -15,6 +15,7 @@ import com.ho.holive.domain.model.LiveRoom
 import com.ho.holive.domain.model.LiveRoomDetail
 import com.ho.holive.domain.repository.LiveRepository
 import java.net.URLDecoder
+import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -44,14 +45,17 @@ class LiveRepositoryImpl @Inject constructor(
 
     override suspend fun getPlatforms(): AppResult<List<LivePlatform>> {
         return try {
-            val platforms = apiService.getPlatforms(NativeEndpointBridge.platformsUrl()).platforms.map { platform ->
-                LivePlatform(
-                    title = platform.title.decodeDisplayText(),
-                    address = platform.address,
-                    iconUrl = platform.iconUrl.normalizeImageUrl(),
-                    onlineCount = platform.onlineCount.toIntOrNull() ?: 0,
-                )
-            }
+            val platforms = apiService.getPlatforms(NativeEndpointBridge.platformsUrl()).platforms
+                .mapNotNull { platform ->
+                    val decodedTitle = platform.title.decodeDisplayText()
+                    if (isBlockedPlatformTitle(decodedTitle)) return@mapNotNull null
+                    LivePlatform(
+                        title = decodedTitle,
+                        address = platform.address,
+                        iconUrl = platform.iconUrl.normalizeImageUrl(),
+                        onlineCount = platform.onlineCount.toIntOrNull() ?: 0,
+                    )
+                }
             AppResult.Success(platforms)
         } catch (throwable: Throwable) {
             if (throwable is CancellationException) throw throwable
@@ -139,5 +143,37 @@ class LiveRepositoryImpl @Inject constructor(
         } catch (_: IllegalArgumentException) {
             value
         }
+    }
+
+    private fun isBlockedPlatformTitle(title: String): Boolean {
+        val normalizedCandidates = setOf(
+            normalizePlatformTitle(title),
+            normalizePlatformTitle(title.toUtf8Text(GBK_CHARSET)),
+            normalizePlatformTitle(title.toUtf8Text(StandardCharsets.ISO_8859_1)),
+        )
+        return BLOCKED_PLATFORM_TITLES.any { blockedTitle ->
+            normalizePlatformTitle(blockedTitle) in normalizedCandidates
+        }
+    }
+
+    private fun normalizePlatformTitle(title: String): String {
+        return title.trim().replace(WHITESPACE_REGEX, "")
+    }
+
+    private fun String.toUtf8Text(sourceCharset: Charset): String {
+        return try {
+            String(toByteArray(sourceCharset), StandardCharsets.UTF_8)
+        } catch (_: Throwable) {
+            this
+        }
+    }
+
+    private companion object {
+        val WHITESPACE_REGEX = Regex("\\s+")
+        val BLOCKED_PLATFORM_TITLES = arrayOf(
+            "卫视直播",
+            "映客",
+        )
+        val GBK_CHARSET: Charset = Charset.forName("GBK")
     }
 }
