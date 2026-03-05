@@ -60,12 +60,15 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.view.WindowCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
@@ -229,6 +232,7 @@ private fun RoomPlayer(
 ) {
     val context = LocalContext.current
     val activity = context as? Activity
+    val lifecycleOwner = LocalLifecycleOwner.current
     val audioManager = remember {
         context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
     }
@@ -258,6 +262,7 @@ private fun RoomPlayer(
     var gestureHint by remember { mutableStateOf<String?>(null) }
     var fullscreenMenuExpanded by remember { mutableStateOf(false) }
     var infoDialogVisible by remember { mutableStateOf(false) }
+    var shouldResumeOnStart by remember { mutableStateOf(false) }
 
     var currentBrightness by remember {
         mutableFloatStateOf(
@@ -359,6 +364,30 @@ private fun RoomPlayer(
         onDispose {
             exoPlayer.removeListener(listener)
             exoPlayer.release()
+        }
+    }
+
+    DisposableEffect(lifecycleOwner, exoPlayer) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_STOP -> {
+                    shouldResumeOnStart = exoPlayer.playWhenReady
+                    exoPlayer.pause()
+                    exoPlayer.playWhenReady = false
+                }
+
+                Lifecycle.Event.ON_START -> {
+                    if (!shouldResumeOnStart) return@LifecycleEventObserver
+                    exoPlayer.playWhenReady = true
+                    exoPlayer.play()
+                }
+
+                else -> Unit
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
         }
     }
 

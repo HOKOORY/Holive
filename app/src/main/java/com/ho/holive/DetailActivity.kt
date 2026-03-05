@@ -69,6 +69,7 @@ class DetailActivity : ComponentActivity() {
     private lateinit var networkBanner: TextView
     private lateinit var previousButton: MaterialButton
     private lateinit var nextButton: MaterialButton
+    private lateinit var pauseButton: MaterialButton
     private lateinit var retryButton: MaterialButton
     private lateinit var fullscreenButton: MaterialButton
 
@@ -92,6 +93,7 @@ class DetailActivity : ComponentActivity() {
     private var gestureStartBrightness = 0.5f
     private var switchedInCurrentGesture = false
     private var movedBeyondSlopInCurrentGesture = false
+    private var shouldResumeOnStart = false
     private var controlsVisible = true
     private val controlsFadeDurationMs = 180L
     private val hideGestureHintRunnable = Runnable { gestureHintText.isVisible = false }
@@ -125,6 +127,7 @@ class DetailActivity : ComponentActivity() {
         networkBanner = findViewById(R.id.detailNetworkBanner)
         previousButton = findViewById(R.id.prevButton)
         nextButton = findViewById(R.id.nextButton)
+        pauseButton = findViewById(R.id.pauseButton)
         retryButton = findViewById(R.id.retryButton)
         fullscreenButton = findViewById(R.id.fullscreenButton)
     }
@@ -156,9 +159,14 @@ class DetailActivity : ComponentActivity() {
             override fun onPlayerError(error: PlaybackException) {
                 viewModel.onPlayerError(error.message ?: error.errorCodeName)
             }
+
+            override fun onIsPlayingChanged(isPlaying: Boolean) {
+                updatePauseButton(isPlaying || player.playWhenReady)
+            }
         }
         player.addListener(playerListener)
         playerView.player = player
+        updatePauseButton(true)
     }
 
     private fun setupGestureControls() {
@@ -291,6 +299,10 @@ class DetailActivity : ComponentActivity() {
             viewModel.playNext()
             showControlsTemporarily()
         }
+        pauseButton.setOnClickListener {
+            togglePlayback()
+            showControlsTemporarily()
+        }
         retryButton.setOnClickListener {
             viewModel.manualRetry()
             showControlsTemporarily()
@@ -327,14 +339,14 @@ class DetailActivity : ComponentActivity() {
         }
         fullscreenButton.contentDescription = fullscreenButton.text
         val activeBgColor = if (enterFullscreen) {
-            Color.parseColor("#2557D3A0")
+            Color.parseColor("#263F5C66")
         } else {
-            Color.parseColor("#2F0E8D63")
+            Color.parseColor("#26335A47")
         }
         val activeStrokeColor = if (enterFullscreen) {
-            Color.parseColor("#7FA7F3D0")
+            Color.parseColor("#66BFEAF5")
         } else {
-            Color.parseColor("#93A7F3D0")
+            Color.parseColor("#66A5E7CC")
         }
         fullscreenButton.backgroundTintList = ColorStateList.valueOf(activeBgColor)
         fullscreenButton.strokeColor = ColorStateList.valueOf(activeStrokeColor)
@@ -344,10 +356,13 @@ class DetailActivity : ComponentActivity() {
             playerTitleText.text = getString(R.string.play_failed)
             playerErrorText.isVisible = true
             playerErrorText.text = state.errorMessage ?: getString(R.string.play_failed)
+            pauseButton.isEnabled = false
+            updatePauseButton(false)
         } else {
             playerTitleText.text = room.title
             playerErrorText.isVisible = false
             maybeApplyMedia(room, state.retryToken)
+            pauseButton.isEnabled = true
         }
 
         previousButton.isEnabled = state.previousRoomId != null
@@ -387,6 +402,24 @@ class DetailActivity : ComponentActivity() {
         player.setMediaItem(mediaItemBuilder.build())
         player.prepare()
         player.playWhenReady = true
+        updatePauseButton(true)
+    }
+
+    private fun togglePlayback() {
+        if (player.isPlaying || player.playWhenReady) {
+            player.pause()
+            player.playWhenReady = false
+            updatePauseButton(false)
+            return
+        }
+        player.playWhenReady = true
+        player.play()
+        updatePauseButton(true)
+    }
+
+    private fun updatePauseButton(playing: Boolean) {
+        pauseButton.text = if (playing) getString(R.string.pause) else getString(R.string.play)
+        pauseButton.contentDescription = pauseButton.text
     }
 
     private fun applyFullscreen(mode: FullScreenMode) {
@@ -455,9 +488,28 @@ class DetailActivity : ComponentActivity() {
             .start()
     }
 
+    override fun onStart() {
+        super.onStart()
+        if (!::player.isInitialized || !shouldResumeOnStart) return
+        player.playWhenReady = true
+        player.play()
+        updatePauseButton(true)
+    }
+
+    override fun onStop() {
+        if (::player.isInitialized) {
+            shouldResumeOnStart = player.playWhenReady
+            player.pause()
+            player.playWhenReady = false
+            updatePauseButton(false)
+        }
+        super.onStop()
+    }
+
     override fun onDestroy() {
         gestureHintText.removeCallbacks(hideGestureHintRunnable)
         rootView.removeCallbacks(hideControlsRunnable)
+        shouldResumeOnStart = false
         playerView.player = null
         player.removeListener(playerListener)
         player.release()

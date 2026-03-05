@@ -9,6 +9,8 @@
     <string name="rooms_section_title_with_platform">%1$s 直播列表</string>
     <string name="search_hint">搜索直播间</string>
     <string name="retry">重试</string>
+    <string name="play">播放</string>
+    <string name="pause">暂停</string>
     <string name="refresh">刷新</string>
     <string name="close">关闭</string>
     <string name="empty_text">暂无直播</string>

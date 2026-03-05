@@ -8,6 +8,8 @@
     <string name="rooms_section_title_with_platform">%1$s Live Rooms</string>
     <string name="search_hint">Search live room</string>
     <string name="retry">Retry</string>
+    <string name="play">Play</string>
+    <string name="pause">Pause</string>
     <string name="refresh">Refresh</string>
     <string name="close">Close</string>
     <string name="empty_text">No live rooms found</string>
