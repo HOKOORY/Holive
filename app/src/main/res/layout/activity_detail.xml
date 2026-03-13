@@ -84,22 +84,7 @@
                 app:strokeColor="#40FFFFFF"
                 app:strokeWidth="1dp" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/nextButton"
-                style="@style/Widget.Material3.Button.TextButton"
-                android:layout_width="0dp"
-                android:layout_height="34dp"
-                android:layout_marginStart="4dp"
-                android:layout_weight="1"
-                android:text="@string/next_room"
-                android:textAllCaps="false"
-                android:textColor="#ECFFFFFF"
-                android:textSize="11sp"
-                app:backgroundTint="#24323D40"
-                app:cornerRadius="12dp"
-                app:rippleColor="#33FFFFFF"
-                app:strokeColor="#40FFFFFF"
-                app:strokeWidth="1dp" />
+
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/pauseButton"
@@ -150,6 +135,23 @@
                 app:cornerRadius="12dp"
                 app:rippleColor="#33FFFFFF"
                 app:strokeColor="#66A5E7CC"
+                app:strokeWidth="1dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/nextButton"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="0dp"
+                android:layout_height="34dp"
+                android:layout_marginStart="4dp"
+                android:layout_weight="1"
+                android:text="@string/next_room"
+                android:textAllCaps="false"
+                android:textColor="#ECFFFFFF"
+                android:textSize="11sp"
+                app:backgroundTint="#24323D40"
+                app:cornerRadius="12dp"
+                app:rippleColor="#33FFFFFF"
+                app:strokeColor="#40FFFFFF"
                 app:strokeWidth="1dp" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
