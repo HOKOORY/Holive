@@ -47,20 +47,6 @@
             android:textStyle="bold" />
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/detailNetworkBanner"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="top|center_horizontal"
-        android:layout_marginTop="52dp"
-        android:background="#A9A5423A"
-        android:paddingHorizontal="12dp"
-        android:paddingVertical="6dp"
-        android:text="@string/network_lost"
-        android:textColor="@android:color/white"
-        android:textSize="12sp"
-        android:visibility="gone" />
-
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/controlDock"
         android:layout_width="match_parent"

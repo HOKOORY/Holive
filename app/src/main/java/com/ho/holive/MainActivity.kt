@@ -45,7 +45,6 @@ class MainActivity : ComponentActivity() {
     private lateinit var rootView: View
     private lateinit var toolbar: MaterialToolbar
     private lateinit var searchEdit: TextInputEditText
-    private lateinit var networkBanner: TextView
     private lateinit var platformIcon: ImageView
     private lateinit var platformTitle: TextView
     private lateinit var platformMeta: TextView
@@ -83,7 +82,6 @@ class MainActivity : ComponentActivity() {
         rootView = findViewById(R.id.mainRoot)
         toolbar = findViewById(R.id.toolbar)
         searchEdit = findViewById(R.id.searchEdit)
-        networkBanner = findViewById(R.id.networkBanner)
         platformIcon = findViewById(R.id.platformIcon)
         platformTitle = findViewById(R.id.platformTitle)
         platformMeta = findViewById(R.id.platformMeta)
@@ -184,7 +182,6 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun renderHomeState(state: HomeUiState) {
-        networkBanner.isVisible = !state.networkConnected
 
         val selectedPlatform = state.platforms.firstOrNull { it.address == state.selectedPlatformAddress }
         renderPlatformCard(selectedPlatform, state.platforms.size)

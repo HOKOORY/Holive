@@ -66,7 +66,6 @@ class DetailActivity : ComponentActivity() {
     private lateinit var gestureHintText: TextView
     private lateinit var backButton: ImageButton
     private lateinit var playerTitleText: TextView
-    private lateinit var networkBanner: TextView
     private lateinit var previousButton: MaterialButton
     private lateinit var nextButton: MaterialButton
     private lateinit var pauseButton: MaterialButton
@@ -124,7 +123,6 @@ class DetailActivity : ComponentActivity() {
         gestureHintText = findViewById(R.id.gestureHintText)
         backButton = findViewById(R.id.playerBackButton)
         playerTitleText = findViewById(R.id.playerTitleText)
-        networkBanner = findViewById(R.id.detailNetworkBanner)
         previousButton = findViewById(R.id.prevButton)
         nextButton = findViewById(R.id.nextButton)
         pauseButton = findViewById(R.id.pauseButton)
@@ -372,7 +370,6 @@ class DetailActivity : ComponentActivity() {
 
         previousButton.isEnabled = state.previousRoomId != null
         nextButton.isEnabled = state.nextRoomId != null
-        networkBanner.isVisible = !state.networkConnected
 
         if (state.playerErrorMessage != null) {
             Toast.makeText(this, state.playerErrorMessage, Toast.LENGTH_SHORT).show()
