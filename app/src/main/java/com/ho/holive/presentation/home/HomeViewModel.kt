@@ -64,8 +64,8 @@ class HomeViewModel @Inject constructor(
                 }
             }
         }
-        checkForUpdate()
         loadPlatforms()
+        checkForUpdate()
     }
 
     fun onQueryChanged(newQuery: String) {
