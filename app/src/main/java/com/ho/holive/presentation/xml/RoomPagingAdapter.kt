@@ -34,7 +34,6 @@ class RoomPagingAdapter(
         private val titleText: TextView = itemView.findViewById(R.id.roomTitleText)
         private val platformIcon: ImageView = itemView.findViewById(R.id.roomPlatformIcon)
         private val platformText: TextView = itemView.findViewById(R.id.roomPlatformText)
-        private val viewerText: TextView = itemView.findViewById(R.id.roomViewerText)
 
         private var roomId: String? = null
 
@@ -49,7 +48,6 @@ class RoomPagingAdapter(
                 roomId = null
                 titleText.text = ""
                 platformText.text = ""
-                viewerText.text = ""
                 coverImage.setImageResource(R.drawable.logo)
                 platformIcon.setImageResource(R.drawable.logo)
                 itemView.isEnabled = false
@@ -59,7 +57,6 @@ class RoomPagingAdapter(
             roomId = item.id
             titleText.text = item.title
             platformText.text = item.platformTitle
-            viewerText.text = itemView.context.getString(R.string.online_count, item.viewerCount)
             coverImage.load(item.coverUrl) {
                 crossfade(false)
                 placeholder(R.drawable.logo)

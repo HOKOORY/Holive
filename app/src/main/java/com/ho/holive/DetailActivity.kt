@@ -336,18 +336,6 @@ class DetailActivity : ComponentActivity() {
             getString(R.string.exit_fullscreen)
         }
         fullscreenButton.contentDescription = fullscreenButton.text
-        val activeBgColor = if (enterFullscreen) {
-            Color.parseColor("#263F5C66")
-        } else {
-            Color.parseColor("#26335A47")
-        }
-        val activeStrokeColor = if (enterFullscreen) {
-            Color.parseColor("#66BFEAF5")
-        } else {
-            Color.parseColor("#66A5E7CC")
-        }
-        fullscreenButton.backgroundTintList = ColorStateList.valueOf(activeBgColor)
-        fullscreenButton.strokeColor = ColorStateList.valueOf(activeStrokeColor)
 
         val room = state.room
         if (room == null) {

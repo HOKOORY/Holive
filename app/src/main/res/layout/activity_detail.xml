@@ -131,10 +131,10 @@
                 android:textAllCaps="false"
                 android:textColor="#ECFFFFFF"
                 android:textSize="11sp"
-                app:backgroundTint="#2A326C57"
+                app:backgroundTint="#24323D40"
                 app:cornerRadius="12dp"
                 app:rippleColor="#33FFFFFF"
-                app:strokeColor="#66A5E7CC"
+                app:strokeColor="#40FFFFFF"
                 app:strokeWidth="1dp" />
 
             <com.google.android.material.button.MaterialButton
