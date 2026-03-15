@@ -43,4 +43,5 @@
     <string name="platform_sheet_count">%1$d / %2$d</string>
     <string name="prev_room">上一个</string>
     <string name="next_room">下一个</string>
+    <string name="max_retry_reached">%1$s (已达到最大重试次数)</string>
 </resources>

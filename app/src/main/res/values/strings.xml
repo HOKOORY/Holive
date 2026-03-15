@@ -42,4 +42,5 @@
     <string name="platform_sheet_count">%1$d / %2$d</string>
     <string name="prev_room">Previous</string>
     <string name="next_room">Next</string>
+    <string name="max_retry_reached">%1$s (Max retry attempts reached)</string>
 </resources>

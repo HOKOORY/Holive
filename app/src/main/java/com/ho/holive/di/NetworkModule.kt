@@ -8,7 +8,6 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import java.io.IOException
 import java.util.zip.Inflater
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
@@ -95,13 +94,8 @@ object NetworkModule {
 
         builder.addInterceptor { chain ->
             val request = chain.request()
-            try {
-                proceedWithDecompression(chain, request)
-            } catch (ioe: IOException) {
-                if (request.method != "GET") throw ioe
-                Thread.sleep(300)
-                proceedWithDecompression(chain, request)
-            }
+            val response = proceedWithDecompression(chain, request)
+            response
         }
 
         return builder.build()

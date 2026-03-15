@@ -63,6 +63,12 @@ class CheckAppUpdateUseCase @Inject constructor(
     private fun compareVersionName(left: String, right: String): Int {
         val leftParts = Regex("""\d+""").findAll(left).map { it.value.toInt() }.toList()
         val rightParts = Regex("""\d+""").findAll(right).map { it.value.toInt() }.toList()
+
+        // If neither version contains digits, fall back to string comparison
+        if (leftParts.isEmpty() && rightParts.isEmpty()) {
+            return left.compareTo(right, ignoreCase = true)
+        }
+
         val maxSize = maxOf(leftParts.size, rightParts.size)
         for (index in 0 until maxSize) {
             val l = leftParts.getOrElse(index) { 0 }

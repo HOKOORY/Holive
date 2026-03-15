@@ -18,7 +18,6 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -27,6 +26,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @OptIn(FlowPreview::class)
 @HiltViewModel
@@ -42,8 +42,8 @@ class HomeViewModel @Inject constructor(
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
     private val queryState = MutableStateFlow("")
-    private var roomsRefreshJob: Job? = null
     private var platformsLoadJob: Job? = null
+    private val isRefreshing = MutableStateFlow(false)
 
     val pagedRooms = queryState
         .debounce(350)
@@ -152,30 +152,28 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun loadRoomsForPlatform(platform: LivePlatform) {
-        roomsRefreshJob?.cancel()
-        val refreshJob = viewModelScope.launch {
+        viewModelScope.launch {
+            // Use compare-and-set to prevent concurrent refreshes
+            if (!isRefreshing.compareAndSet(expect = false, update = true)) {
+                return@launch
+            }
             _uiState.update { it.copy(isRefreshingRooms = true, errorMessage = null) }
-            val result = withContext(Dispatchers.IO) {
-                refreshRoomsUseCase(platform)
-            }
-            when (result) {
-                is AppResult.Success -> Unit
-
-                is AppResult.Error -> {
-                    _uiState.update {
-                        it.copy(
-                            errorMessage = result.message ?: "unknown error",
-                        )
-                    }
+            try {
+                val result = withContext(Dispatchers.IO) {
+                    refreshRoomsUseCase(platform)
                 }
-
-                AppResult.Loading -> Unit
-            }
-        }
-        roomsRefreshJob = refreshJob
-        refreshJob.invokeOnCompletion {
-            if (roomsRefreshJob === refreshJob) {
+                when (result) {
+                    is AppResult.Success -> Unit
+                    is AppResult.Error -> {
+                        _uiState.update {
+                            it.copy(errorMessage = result.message ?: "unknown error")
+                        }
+                    }
+                    AppResult.Loading -> Unit
+                }
+            } finally {
                 _uiState.update { it.copy(isRefreshingRooms = false) }
+                isRefreshing.value = false
             }
         }
     }

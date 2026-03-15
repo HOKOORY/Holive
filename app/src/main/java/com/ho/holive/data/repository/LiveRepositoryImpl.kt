@@ -80,7 +80,7 @@ class LiveRepositoryImpl @Inject constructor(
                         streamUrl = anchor.streamUrl,
                         platformTitle = platform.title,
                         platformIconUrl = platform.iconUrl,
-                        viewerCount = platform.onlineCount,
+                        viewerCount = 0, // API does not provide per-room viewer count
                         // Keep list order stable and aligned with UI order for prev/next switching.
                         updatedAt = now - index,
                     )

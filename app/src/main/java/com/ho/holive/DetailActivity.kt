@@ -372,10 +372,15 @@ class DetailActivity : ComponentActivity() {
         nextButton.isEnabled = state.nextRoomId != null
 
         if (state.playerErrorMessage != null) {
-            Toast.makeText(this, state.playerErrorMessage, Toast.LENGTH_SHORT).show()
+            val displayMessage = if (state.maxRetryReached) {
+                getString(R.string.max_retry_reached, state.playerErrorMessage)
+            } else {
+                state.playerErrorMessage
+            }
+            Toast.makeText(this, displayMessage, Toast.LENGTH_SHORT).show()
             viewModel.dismissPlayerError()
             playerErrorText.isVisible = true
-            playerErrorText.text = state.playerErrorMessage
+            playerErrorText.text = displayMessage
         }
 
         renderLoadingState()

@@ -200,10 +200,15 @@ fun LiveDetailScreen(
     }
 
     uiState.playerErrorMessage?.let { msg ->
+        val displayMessage = if (uiState.maxRetryReached) {
+            stringResource(id = R.string.max_retry_reached, msg)
+        } else {
+            msg
+        }
         AlertDialog(
             onDismissRequest = viewModel::dismissPlayerError,
             title = { Text(text = stringResource(id = R.string.play_failed)) },
-            text = { Text(text = msg) },
+            text = { Text(text = displayMessage) },
             confirmButton = {
                 Button(onClick = viewModel::dismissPlayerError) {
                     Text(text = stringResource(id = R.string.close))

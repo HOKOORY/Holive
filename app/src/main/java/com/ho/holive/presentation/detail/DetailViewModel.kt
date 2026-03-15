@@ -32,6 +32,10 @@ class DetailViewModel @Inject constructor(
 
     private var retryCount = 0
 
+    companion object {
+        private const val MAX_RETRY_COUNT = 5
+    }
+
     init {
         loadRoom(currentRoomId)
         viewModelScope.launch {
@@ -69,6 +73,10 @@ class DetailViewModel @Inject constructor(
     }
 
     fun onPlayerError(message: String) {
+        if (retryCount >= MAX_RETRY_COUNT) {
+            _uiState.update { it.copy(playerErrorMessage = message, maxRetryReached = true) }
+            return
+        }
         viewModelScope.launch {
             _uiState.update { it.copy(playerErrorMessage = message) }
             retryCount += 1
@@ -79,7 +87,7 @@ class DetailViewModel @Inject constructor(
     }
 
     fun dismissPlayerError() {
-        _uiState.update { it.copy(playerErrorMessage = null) }
+        _uiState.update { it.copy(playerErrorMessage = null, maxRetryReached = false) }
     }
 
     private fun loadRoom(roomId: String) {
@@ -93,6 +101,7 @@ class DetailViewModel @Inject constructor(
                     nextRoomId = null,
                     errorMessage = null,
                     playerErrorMessage = null,
+                    maxRetryReached = false,
                 )
             }
 
@@ -111,6 +120,7 @@ class DetailViewModel @Inject constructor(
                             nextRoomId = nextId,
                             errorMessage = null,
                             playerErrorMessage = null,
+                            maxRetryReached = false,
                         )
                     }
                     triggerRetry()

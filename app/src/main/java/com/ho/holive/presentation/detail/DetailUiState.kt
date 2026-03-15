@@ -19,4 +19,5 @@ data class DetailUiState(
     val networkConnected: Boolean = true,
     val retryToken: Int = 0,
     val playerErrorMessage: String? = null,
+    val maxRetryReached: Boolean = false,
 )
