@@ -74,11 +74,11 @@ jobs:
           NEXT_CODE=$((CURRENT_CODE + 1))
 
           if [[ "$CURRENT_NAME" =~ ^[0-9]+$ ]]; then
-            NEXT_NAME="$((CURRENT_NAME + 1))"
+            NEXT_NAME="$((10#CURRENT_NAME + 1))"
           elif [[ "$CURRENT_NAME" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
-            NEXT_NAME="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}.$((BASH_REMATCH[3] + 1))"
+            NEXT_NAME="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}.$((10#${BASH_REMATCH[3]} + 1))"
           elif [[ "$CURRENT_NAME" =~ ^([0-9]+)\.([0-9]+)$ ]]; then
-            NEXT_NAME="${BASH_REMATCH[1]}.$((BASH_REMATCH[2] + 1))"
+            NEXT_NAME="${BASH_REMATCH[1]}.$((10#${BASH_REMATCH[2]} + 1))"
           else
             NEXT_NAME="${CURRENT_NAME}.${NEXT_CODE}"
           fi
